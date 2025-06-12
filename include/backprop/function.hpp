@@ -39,8 +39,8 @@ class MultiplyFunction : public Function<T>{
         this->parents = {a, b};
     }
     void backward(Tensor<T>& output) override {
-        this->parents[0]->grad_ = output.grad_ * this->parents[1].data_;
-        this->parents[1]->grad_ = output.grad_ * this->parents[0].data_;
+        this->parents[0]->grad_ = output.grad_ * this->parents[1]->item();
+        this->parents[1]->grad_ = output.grad_ * this->parents[0]->item();
     }
 };
 

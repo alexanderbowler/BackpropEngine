@@ -3,7 +3,7 @@
 #include "backprop/tensor.hpp"
 
 
-TEST(TensorTest2, ShapeIsCorrect){
+TEST(TensorTest, ShapeIsCorrect){
     backprop::Tensor<float> t(4.0);
     std::vector<int> expected = {};
     EXPECT_EQ(t.shape(), expected);
