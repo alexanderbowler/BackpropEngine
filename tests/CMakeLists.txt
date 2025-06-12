@@ -1,0 +1,3 @@
+add_executable(tensor_tests.exe tensor_tests.cpp)
+target_compile_definitions(tensor_tests.exe PRIVATE UNIT_TEST)
+target_link_libraries(tensor_tests.exe PRIVATE gtest_main tensor_test_library)
