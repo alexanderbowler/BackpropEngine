@@ -34,4 +34,23 @@ TEST(TensorTest, AddBackwardTest){
     EXPECT_EQ(t2.grad_, 1.0);
 }
 
+TEST(TensorTest, MultiplyTest){
+    backprop::Tensor<float> t(4.0);
+    backprop::Tensor<float> t2(5.5);
+    backprop::Tensor<float> product = t*t2;
+    EXPECT_EQ(product.item(), 22.0);
+    EXPECT_EQ(product.grad_fn_ptr->parents[0], &t);
+    EXPECT_EQ(product.grad_fn_ptr->parents[1], &t2);
+}
+
+TEST(TensorTest, MultiplyBackwardTest){
+    backprop::Tensor<float> t(4.0);
+    backprop::Tensor<float> t2(5.5);
+    backprop::Tensor<float> product = t*t2;
+    product.grad_ = 1.0;
+    product.backward();
+    EXPECT_EQ(t.grad_, 5.5);
+    EXPECT_EQ(t2.grad_, 4.0);
+}
+
 

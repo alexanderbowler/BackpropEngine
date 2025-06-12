@@ -65,12 +65,20 @@ class Tensor{
 };
 
 template<typename T, typename U>
-auto operator+(Tensor<T>& lfs, Tensor<U>& rhs){
+Tensor<T> operator+(Tensor<T>& lfs, Tensor<U>& rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot add tensors of two different data types");
 
     
     return Tensor<T>(lfs.item() + rhs.item(), std::make_shared<AddFunction<T>>(&lfs, &rhs));
+}
+
+template<typename T, typename U>
+Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot multiply tensors of two different data types");
+    
+    return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(&lfs, &rhs));
 }
 
 }
