@@ -13,6 +13,9 @@ set(GTEST_IMPORTED_TARGETS_DEFINED TRUE)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
+
 include_directories(include/backprop)
 
 add_subdirectory(src/tensor)
