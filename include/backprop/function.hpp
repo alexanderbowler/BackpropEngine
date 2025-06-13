@@ -44,4 +44,16 @@ class MultiplyFunction : public Function<T>{
     }
 };
 
+template <typename T>
+class TanhFunction : public Function<T>{
+    public:
+    TanhFunction(Tensor<T>* parent){
+        this->parents = {parent};
+    }
+    void backward(Tensor<T>& output) override {
+        T tanh_x = output.item();
+        this->parents[0]->grad_ = output.grad_ * (1 - tanh_x * tanh_x);
+    }
+};
+
 }

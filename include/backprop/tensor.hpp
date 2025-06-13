@@ -2,6 +2,11 @@
 #include <vector>
 #include <type_traits>
 #include <typeinfo>
+#include <algorithm>
+#include <stack>
+#include <unordered_set>
+#include <iostream>
+#include <cmath>
 
 #include "function.hpp"
 
@@ -12,7 +17,7 @@ template<typename T>
 class Tensor{
     template <typename> friend class TensorTest;
     public:
-        Tensor(T value): data_(value), shape_({}) {
+        Tensor(T value): data_(value), shape_({}), grad_(0.0) {
             grad_fn_ptr = nullptr;
         }
         Tensor(T value, std::shared_ptr<Function<T>> grad_fn): data_(value), shape_({}), grad_fn_ptr(grad_fn) {}
@@ -48,9 +53,16 @@ class Tensor{
         #endif
 
         // Calls the corresponding backward function
+        // REQUIRES: The gradient for this tensor is set
         void backward(){
-            this->grad_fn_ptr->backward(*this);
-        }
+            assert(grad_fn_ptr != nullptr);
+            std::vector<Tensor<T>*> graph;
+            build_topograph(graph, this);
+            for(Tensor<T>* node: graph){
+                node->grad_fn_ptr->backward(*node);
+            }
+            // this->grad_fn_ptr->backward(*this);
+        }   
 
         
 
@@ -60,6 +72,31 @@ class Tensor{
     protected:
         T data_;
         std::vector<int> shape_;
+
+        // Builds a topological graph for backpropogation
+        void build_topograph(std::vector<Tensor<T>*>& graph, Tensor<T>* t){
+            std::unordered_set<Tensor<T>*> visited;
+            build_topo_recursive(graph, t, visited);
+            // This actually physically reverses the values in memory in future might just change 
+            // the access order for more efficiency
+            std::reverse(graph.begin(), graph.end());
+            graph.shrink_to_fit();
+        }
+
+        // recursive helper function to build the topological graph
+        void build_topo_recursive(
+            std::vector<Tensor<T>*>& graph,
+            Tensor<T>* t, 
+            std::unordered_set<Tensor<T>*>& visited
+        ){
+            if(visited.count(t) || t->grad_fn_ptr == nullptr)
+                    return;
+            visited.insert(t);
+            for(Tensor<T>* parent : t->grad_fn_ptr->parents){
+                build_topo_recursive(graph, parent, visited);
+            }
+            graph.push_back(t);
+        }
 
 
 };
@@ -79,6 +116,15 @@ Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
                     "Cannot multiply tensors of two different data types");
     
     return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(&lfs, &rhs));
+}
+
+template <typename T>
+Tensor<T> tanh(Tensor<T>& t){
+    T data = t.item();
+    T pos_exp = std::exp(data);
+    T neg_exp = std::exp(-1*data);
+    return Tensor<T>((pos_exp-neg_exp)/(pos_exp+neg_exp), 
+                    std::make_shared<TanhFunction<T>>(&t));
 }
 
 }
