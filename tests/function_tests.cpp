@@ -14,7 +14,8 @@ TEST(FunctionTest, AddFunctionTest){
     // test backward
     backprop::Tensor<float> out(1.0);
     out.grad_ = 1.5;
-    add_fn.backward(out);
+    add_fn.set_output_tensor(&out);
+    add_fn.backward();
     EXPECT_EQ(t.grad_, 1.5);
     EXPECT_EQ(t2.grad_, 1.5);
 }
@@ -29,7 +30,8 @@ TEST(FunctionTest, MultiplyFunctionTest){
     // test backward
     backprop::Tensor<float> out(1.0);
     out.grad_ = 2.0;
-    multiply_fn.backward(out);
+    multiply_fn.set_output_tensor(&out);
+    multiply_fn.backward();
     EXPECT_EQ(t.grad_, 11.0);
     EXPECT_EQ(t2.grad_, 8.0);
 }
@@ -45,6 +47,7 @@ TEST(FunctionTest, TanhFunctionTest){
     out.grad_ = 2.0;
     // deriv of tanh(x) is 1-2.0^2 = -3.0, times outputis -6.0
     float result = -6.0;
-    tanh_fn.backward(out);
+    tanh_fn.set_output_tensor(&out);
+    tanh_fn.backward();
     EXPECT_EQ(t.grad_, result);
 }

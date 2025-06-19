@@ -21,10 +21,16 @@ class Tensor{
             grad_fn_ptr = nullptr;
         }
         Tensor(T value, std::shared_ptr<Function<T>> grad_fn): 
-            data_(value), shape_({}), grad_fn_ptr(grad_fn), grad_(0.0) {}
+            data_(value), shape_({}), grad_fn_ptr(grad_fn), grad_(0.0) {
+                grad_fn->set_output_tensor(this);
+            }
 
         const T item() const{
             return data_;
+        }
+
+        T set(T new_data){
+            data_ = new_data;
         }
 
         const std::vector<int>& shape() const{
@@ -60,9 +66,8 @@ class Tensor{
             std::vector<Tensor<T>*> graph;
             build_topograph(graph, this);
             for(Tensor<T>* node: graph){
-                node->grad_fn_ptr->backward(*node);
+                node->grad_fn_ptr->backward();
             }
-            // this->grad_fn_ptr->backward(*this);
         }   
 
         

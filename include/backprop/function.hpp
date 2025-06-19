@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cassert>
 /*
 Jun 8 2025
 Alex Bowler
@@ -26,7 +27,23 @@ template <typename T>
 class Function{
     public:
         std::vector<Tensor<T>*> parents;
-        virtual void backward(Tensor<T>& output) = 0;  
+        // pointer to the tensor that the function created
+        Tensor<T>* output_ = nullptr;
+        virtual void backward() = 0;  
+
+        /**
+         * @brief Sets the pointer to the tensor that this function created.
+         * 
+         * This method is used to associate the function instance with the output tensor
+         * it produces in the computation graph. This association is useful for tracking
+         * the relationship between operations and their resulting tensors, especially
+         * during backpropagation.
+         * 
+         * @param o Pointer to the tensor created by this function.
+         */
+        void set_output_tensor(Tensor<T>* o){
+            this->output_ = o;
+        }
 };
 
 /**
@@ -57,11 +74,11 @@ class AddFunction: public Function<T>{
      * 
      * Adds the output gradient to both parent tensors' gradients.
      * 
-     * @param output The output tensor from which the gradient is propagated.
      */
-    void backward(Tensor<T>& output) override {
-        this->parents[0]->grad_ += output.grad_;
-        this->parents[1]->grad_ += output.grad_;
+    void backward() override {
+        assert(this->output_ != nullptr);
+        this->parents[0]->grad_ += this->output_->grad_;
+        this->parents[1]->grad_ += this->output_->grad_;
     }
 };
 /**
@@ -94,9 +111,10 @@ class MultiplyFunction : public Function<T>{
      * 
      * @param output The output tensor from which the gradient is propagated.
      */
-    void backward(Tensor<T>& output) override {
-        this->parents[0]->grad_ += output.grad_ * this->parents[1]->item();
-        this->parents[1]->grad_ += output.grad_ * this->parents[0]->item();
+    void backward() override {
+        assert(this->output_ != nullptr);
+        this->parents[0]->grad_ += this->output_->grad_ * this->parents[1]->item();
+        this->parents[1]->grad_ += this->output_->grad_ * this->parents[0]->item();
     }
 };
 
@@ -129,9 +147,23 @@ class TanhFunction : public Function<T>{
      * 
      * @param output The output tensor from which the gradient is propagated.
      */
-    void backward(Tensor<T>& output) override {
-        T tanh_x = output.item();
-        this->parents[0]->grad_ += output.grad_ * (1 - tanh_x * tanh_x);
+    void backward() override {
+        assert(this->output_ != nullptr);
+        T tanh_x = this->output_->item();
+        this->parents[0]->grad_ += this->output_->grad_ * (1 - tanh_x * tanh_x);
+    }
+
+    /**
+     * @brief Forward pass of tanh operation
+     * 
+     * Calculates the forward operation of tanh currently for testing purposes
+     */
+    void forward(){
+        assert(this->output_ != nullptr);
+        T data = this->parents[0].item();
+        T pos_exp = std::exp(data);
+        T neg_exp = std::exp(-1*data);
+        return this->output_->set((pos_exp-neg_exp)/(pos_exp+neg_exp));
     }
 };
 
