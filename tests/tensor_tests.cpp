@@ -141,18 +141,21 @@ TEST(TensorTest, DoubleUseBackpropogation){
     backprop::Tensor<float> t5 = t2 * t4;
     backprop::Tensor<float> t6 = t3+t5;
     backprop::Tensor<float> t7(3.0);
-    backprop::Tensor<float> t8 = t5*t6;
+    backprop::Tensor<float> t8 = t7*t6;
     t8.grad_ = 1.0;
     t8.backward();
 
+    EXPECT_EQ(t3.item(), 22.0);
+    EXPECT_EQ(t5.item(), -11.0);
+    EXPECT_EQ(t6.item(), 11.0);
     EXPECT_EQ(t8.item(), 33.0);
     EXPECT_EQ(t7.grad_, 11.0);
     EXPECT_EQ(t6.grad_, 3.0);    
     EXPECT_EQ(t5.grad_, 3.0);    
-    EXPECT_EQ(t4.grad_, 15.5);    
+    EXPECT_EQ(t4.grad_, 16.5);    
     EXPECT_EQ(t3.grad_, 3.0);    
-    EXPECT_EQ(t2.grad_, 2.0);    
-    EXPECT_EQ(t.grad_, 15.5);    
+    EXPECT_EQ(t2.grad_, 6.0);    
+    EXPECT_EQ(t.grad_, 16.5);    
 }
 
 

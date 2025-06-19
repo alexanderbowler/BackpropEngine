@@ -20,7 +20,8 @@ class Tensor{
         Tensor(T value): data_(value), shape_({}), grad_(0.0) {
             grad_fn_ptr = nullptr;
         }
-        Tensor(T value, std::shared_ptr<Function<T>> grad_fn): data_(value), shape_({}), grad_fn_ptr(grad_fn) {}
+        Tensor(T value, std::shared_ptr<Function<T>> grad_fn): 
+            data_(value), shape_({}), grad_fn_ptr(grad_fn), grad_(0.0) {}
 
         const T item() const{
             return data_;
