@@ -3,6 +3,7 @@
 #include <cmath>
 #include "backprop/tensor.hpp"
 #include "backprop/function.hpp"
+#include "test_helpers.hpp"
 
 TEST(FunctionTest, AddFunctionTest){
     backprop::Tensor<float> t(4.0);
@@ -12,12 +13,13 @@ TEST(FunctionTest, AddFunctionTest){
     EXPECT_EQ(add_fn.parents[1], &t2) << "AddFunction should have t2 as parent";
 
     // test backward
-    backprop::Tensor<float> out(1.0);
-    out.grad_ = 1.5;
+    backprop::Tensor<float> out(9.5);
+    out.grad_ = 1.0;
     add_fn.set_output_tensor(&out);
-    add_fn.backward();
-    EXPECT_EQ(t.grad_, 1.5);
-    EXPECT_EQ(t2.grad_, 1.5);
+    backprop_function_test(add_fn);
+    // add_fn.backward();
+    // EXPECT_EQ(t.grad_, 1.5);
+    // EXPECT_EQ(t2.grad_, 1.5);
 }
 
 TEST(FunctionTest, MultiplyFunctionTest){
@@ -28,12 +30,13 @@ TEST(FunctionTest, MultiplyFunctionTest){
     EXPECT_EQ(multiply_fn.parents[1], &t2) << "MultiplyFunction should have t2 as parent";
 
     // test backward
-    backprop::Tensor<float> out(1.0);
-    out.grad_ = 2.0;
+    backprop::Tensor<float> out(22.0);
+    out.grad_ = 1.0;
     multiply_fn.set_output_tensor(&out);
-    multiply_fn.backward();
-    EXPECT_EQ(t.grad_, 11.0);
-    EXPECT_EQ(t2.grad_, 8.0);
+    backprop_function_test(multiply_fn);
+    // multiply_fn.backward();
+    // EXPECT_EQ(t.grad_, 11.0);
+    // EXPECT_EQ(t2.grad_, 8.0);
 }
 
 TEST(FunctionTest, TanhFunctionTest){
@@ -43,11 +46,11 @@ TEST(FunctionTest, TanhFunctionTest){
 
     //test backward
     // tanh(x) = 2.0
-    backprop::Tensor<float> out(2.0);
-    out.grad_ = 2.0;
+    backprop::Tensor<float> out(0.96402758);
+    out.grad_ = 1.0;
     // deriv of tanh(x) is 1-2.0^2 = -3.0, times outputis -6.0
-    float result = -6.0;
     tanh_fn.set_output_tensor(&out);
-    tanh_fn.backward();
-    EXPECT_EQ(t.grad_, result);
+    backprop_function_test(tanh_fn);
+    // tanh_fn.backward();
+    // EXPECT_EQ(t.grad_, result);
 }

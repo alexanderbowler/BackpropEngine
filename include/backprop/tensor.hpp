@@ -29,7 +29,7 @@ class Tensor{
             return data_;
         }
 
-        T set(T new_data){
+        void set(T new_data){
             data_ = new_data;
         }
 

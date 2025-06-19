@@ -30,6 +30,7 @@ class Function{
         // pointer to the tensor that the function created
         Tensor<T>* output_ = nullptr;
         virtual void backward() = 0;  
+        virtual void forward() = 0;
 
         /**
          * @brief Sets the pointer to the tensor that this function created.
@@ -80,6 +81,11 @@ class AddFunction: public Function<T>{
         this->parents[0]->grad_ += this->output_->grad_;
         this->parents[1]->grad_ += this->output_->grad_;
     }
+
+    void forward() override {
+        assert(this->output_ != nullptr);
+        this->output_->set(this->parents[0]->item() + this->parents[1]->item());
+    }
 };
 /**
  * @brief Function representing element-wise multiplication of two tensors.
@@ -115,6 +121,23 @@ class MultiplyFunction : public Function<T>{
         assert(this->output_ != nullptr);
         this->parents[0]->grad_ += this->output_->grad_ * this->parents[1]->item();
         this->parents[1]->grad_ += this->output_->grad_ * this->parents[0]->item();
+    }
+
+    /**
+     * @brief Forward pass for the multiplication operation.
+     * 
+     * Calculates the product of the two parent tensors and sets the result to the output tensor.
+     * This method is used to compute the forward value of the multiplication operation in the computation graph.
+     * 
+     * The output tensor's value is set to the product of the values of the two parent tensors.
+     * 
+     * Example:
+     *   If parent[0] = x and parent[1] = y, then output = x * y.
+     */
+
+    void forward() override {
+        assert(this->output_ != nullptr);
+        this->output_->set(this->parents[0]->item()*this->parents[1]->item());
     }
 };
 
@@ -158,12 +181,12 @@ class TanhFunction : public Function<T>{
      * 
      * Calculates the forward operation of tanh currently for testing purposes
      */
-    void forward(){
+    void forward() override{
         assert(this->output_ != nullptr);
-        T data = this->parents[0].item();
+        T data = this->parents[0]->item();
         T pos_exp = std::exp(data);
         T neg_exp = std::exp(-1*data);
-        return this->output_->set((pos_exp-neg_exp)/(pos_exp+neg_exp));
+        this->output_->set((pos_exp-neg_exp)/(pos_exp+neg_exp));
     }
 };
 
