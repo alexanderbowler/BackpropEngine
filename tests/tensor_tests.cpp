@@ -23,6 +23,8 @@ TEST(TensorTest, AddTensorTest){
     backprop::Tensor<float> t2(5.5);
     backprop::Tensor<float> sum = t+t2;
     EXPECT_EQ(sum.item(), 9.5);
+    EXPECT_NE(sum.grad_fn_ptr, nullptr);
+    EXPECT_EQ(sum.grad_fn_ptr->output_, &sum);
     EXPECT_EQ(sum.grad_fn_ptr->parents[0], &t);
     EXPECT_EQ(sum.grad_fn_ptr->parents[1], &t2);
 }
@@ -42,6 +44,8 @@ TEST(TensorTest, MultiplyTest){
     backprop::Tensor<float> t2(5.5);
     backprop::Tensor<float> product = t*t2;
     EXPECT_EQ(product.item(), 22.0);
+    EXPECT_NE(product.grad_fn_ptr, nullptr);
+    EXPECT_EQ(product.grad_fn_ptr->output_, &product);
     EXPECT_EQ(product.grad_fn_ptr->parents[0], &t);
     EXPECT_EQ(product.grad_fn_ptr->parents[1], &t2);
 }
@@ -61,6 +65,8 @@ TEST(TEnsorTest, TanhForward){
     backprop::Tensor<float> logits = tanh(t);
     float result = 0.76159;
     EXPECT_NEAR(logits.item(), result, 0.0001);
+    EXPECT_NE(logits.grad_fn_ptr, nullptr);
+    EXPECT_EQ(logits.grad_fn_ptr->output_, &logits);
     EXPECT_NE(std::dynamic_pointer_cast<backprop::TanhFunction<float>>(logits.grad_fn_ptr),
     nullptr);
 }
@@ -158,5 +164,25 @@ TEST(TensorTest, DoubleUseBackpropogation){
     EXPECT_EQ(t.grad_, 16.5);    
 }
 
+// TEST(TensorTest, MultiplyWithConstants){
+//   backprop::Tensor<float> t(1.5);
+//   backprop::Tensor<float> res = t*2.0;
+//   EXPECT_EQ(res.item(), 3.0);
+//   res.grad_ = 1.0;
+//   res.backward();
+//   EXPECT_EQ(t.grad_, 2.0);
+//   backprop::Tensor<float> res2 = 3.0*t;
+//   EXPECT_EQ(res2.item(), 4.5);
+// }
 
+// TEST(TensorTest, AddWithConstants){
+//   backprop::Tensor<float> t(1.5);
+//   backprop::Tensor<float> res = t+2.0;
+//   EXPECT_EQ(res.item(), 3.5);
+//   res.grad_ = 1.0;
+//   res.backward();
+//   EXPECT_EQ(t.grad_, 1.0);
+//   backprop::Tensor<float> res2 = 3.0+t;
+//   EXPECT_EQ(res2.item(), 4.5);
+// }
 

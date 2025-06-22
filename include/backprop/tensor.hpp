@@ -80,7 +80,10 @@ class Tensor{
         std::vector<int> shape_;
 
         // Builds a topological graph for backpropogation
-        void build_topograph(std::vector<Tensor<T>*>& graph, Tensor<T>* t){
+        void build_topograph(
+            std::vector<Tensor<T>*>& graph,
+            Tensor<T>* t
+            ){
             std::unordered_set<Tensor<T>*> visited;
             build_topo_recursive(graph, t, visited);
             // This actually physically reverses the values in memory in future might just change 
@@ -111,9 +114,19 @@ template<typename T, typename U>
 Tensor<T> operator+(Tensor<T>& lfs, Tensor<U>& rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot add tensors of two different data types");
-
     
     return Tensor<T>(lfs.item() + rhs.item(), std::make_shared<AddFunction<T>>(&lfs, &rhs));
+}
+
+template<typename T, typename U>
+Tensor<T> operator+(Tensor<T>& lfs, U val){
+    Tensor<T> rhs(static_cast<T>(val));
+    return lfs+rhs;
+}
+
+template<typename T, typename U>
+Tensor<T> operator+(U val, Tensor<T>& rhs){
+    return rhs+val;
 }
 
 template<typename T, typename U>
@@ -124,6 +137,19 @@ Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
     return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(&lfs, &rhs));
 }
 
+// template<typename T, typename U>
+// Tensor<T> operator*(Tensor<T>& lfs, U val){
+//     // CANT do this because will go out of scope then can't be back propogated
+//     // need to think about how to handle this
+//     Tensor<T> rhs(static_cast<T>(val));
+//     return lfs*rhs;
+// }
+
+// template<typename T, typename U>
+// Tensor<T> operator*(U val, Tensor<T>& rhs){
+//     return rhs*val;
+// }
+
 template <typename T>
 Tensor<T> tanh(Tensor<T>& t){
     T data = t.item();
@@ -131,6 +157,14 @@ Tensor<T> tanh(Tensor<T>& t){
     T neg_exp = std::exp(-1*data);
     return Tensor<T>((pos_exp-neg_exp)/(pos_exp+neg_exp), 
                     std::make_shared<TanhFunction<T>>(&t));
+}
+
+template<typename T, typename U>
+Tensor<T> operator-(Tensor<T>& lfs, Tensor<U>& rhs){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot add tensors of two different data types");
+    
+    return lfs + (rhs * -1);
 }
 
 }

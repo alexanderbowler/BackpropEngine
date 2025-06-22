@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <cassert>
+#include <memory>
 /*
 Jun 8 2025
 Alex Bowler
@@ -26,6 +27,7 @@ class Tensor;
 template <typename T>
 class Function{
     public:
+        // pointer to the parent tensors, Note does not pass ownership
         std::vector<Tensor<T>*> parents;
         // pointer to the tensor that the function created
         Tensor<T>* output_ = nullptr;
