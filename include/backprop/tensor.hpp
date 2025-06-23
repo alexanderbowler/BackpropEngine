@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "function.hpp"
+#include "constantRegistry.hpp"
 
 
 namespace backprop{
@@ -93,6 +94,8 @@ class Tensor{
         }
 
         // recursive helper function to build the topological graph
+        // only adds tensors to the graph which have a grad_fn_ptr, ie 
+        // tensors thats have parents / a backwards function to call
         void build_topo_recursive(
             std::vector<Tensor<T>*>& graph,
             Tensor<T>* t, 
@@ -137,18 +140,20 @@ Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
     return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(&lfs, &rhs));
 }
 
-// template<typename T, typename U>
-// Tensor<T> operator*(Tensor<T>& lfs, U val){
-//     // CANT do this because will go out of scope then can't be back propogated
-//     // need to think about how to handle this
-//     Tensor<T> rhs(static_cast<T>(val));
-//     return lfs*rhs;
-// }
+template<typename T, typename U>
+Tensor<T> operator*(Tensor<T>& lfs, U val){
+    // CANT do this because will go out of scope then can't be back propogated
+    // need to think about how to handle this
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot add tensors of two different data types");
+    Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
+    return lfs* (*p_rhs);
+}
 
-// template<typename T, typename U>
-// Tensor<T> operator*(U val, Tensor<T>& rhs){
-//     return rhs*val;
-// }
+template<typename T, typename U>
+Tensor<T> operator*(U val, Tensor<T>& rhs){
+    return rhs*val;
+}
 
 template <typename T>
 Tensor<T> tanh(Tensor<T>& t){

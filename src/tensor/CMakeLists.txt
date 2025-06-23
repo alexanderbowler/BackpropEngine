@@ -7,7 +7,7 @@ target_include_directories(tensor PUBLIC
 
 # Test library that includes gtest for tests
 add_library(tensor_test_library STATIC 
-    tensor.cpp function.cpp
+    tensor.cpp function.cpp constantRegistry.cpp
 )
 
 target_compile_definitions(tensor_test_library PRIVATE UNIT_TEST)
