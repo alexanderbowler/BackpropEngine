@@ -11,6 +11,8 @@ template<typename T>
 class ConstantRegistry {
 private:
     static std::unordered_map<T, std::unique_ptr<backprop::Tensor<T>>> constants_;
+    // TODO: Ensure that these constants don't actually ever change, ie ensure that there grad is 
+    // somehow ignored or smth?
     
 public:
     static backprop::Tensor<T>* get_constant(T value) {

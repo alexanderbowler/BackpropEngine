@@ -123,8 +123,10 @@ Tensor<T> operator+(Tensor<T>& lfs, Tensor<U>& rhs){
 
 template<typename T, typename U>
 Tensor<T> operator+(Tensor<T>& lfs, U val){
-    Tensor<T> rhs(static_cast<T>(val));
-    return lfs+rhs;
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot add tensors of two different data types");
+    Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
+    return lfs+(*p_rhs);
 }
 
 template<typename T, typename U>
@@ -142,10 +144,8 @@ Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
 
 template<typename T, typename U>
 Tensor<T> operator*(Tensor<T>& lfs, U val){
-    // CANT do this because will go out of scope then can't be back propogated
-    // need to think about how to handle this
     static_assert(std::is_same<T, U>::value, 
-                    "Cannot add tensors of two different data types");
+                    "Cannot multiply tensors of two different data types");
     Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
     return lfs* (*p_rhs);
 }
