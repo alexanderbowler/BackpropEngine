@@ -191,3 +191,13 @@ TEST(TensorTest, AddWithConstants){
   EXPECT_EQ(res2.grad_fn_ptr->parents[1], backprop::ConstantRegistry<float>::get_constant(3.0f));
 }
 
+// TEST(TensorTest, SubtractOp){
+//   backprop::Tensor<float> t(2.5);
+//   backprop::Tensor<float> t2(1.5);
+//   backprop::Tensor<float> res = t-t2;
+//   EXPECT_EQ(res.item(), 1.0f);
+//   res.grad_ = 1.5f;
+//   res.backward();
+//   EXPECT_EQ(t.grad_, 1.5f);
+//   EXPECT_EQ(t2.grad_, -1.5f);
+// }

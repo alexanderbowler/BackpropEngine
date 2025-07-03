@@ -167,9 +167,9 @@ Tensor<T> tanh(Tensor<T>& t){
 template<typename T, typename U>
 Tensor<T> operator-(Tensor<T>& lfs, Tensor<U>& rhs){
     static_assert(std::is_same<T, U>::value, 
-                    "Cannot add tensors of two different data types");
+                    "Cannot subtract tensors of two different data types");
     
-    return lfs + (rhs * -1);
+    return lfs + (rhs * static_cast<T>(-1.0));
 }
 
 }
