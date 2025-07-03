@@ -109,7 +109,10 @@ class TensorImpl{
             for(int dimension: shape_){
                 output += std::to_string(dimension) + ", ";
             }
-            output[output.length()-2] = ')';
+            if(shape_.size() == 0)
+                output += ')';
+            else
+                output[output.length()-2] = ')';
             output += " {" + std::to_string(data_) + "}\n";
             return output;
         }
