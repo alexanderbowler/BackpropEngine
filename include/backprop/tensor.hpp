@@ -58,7 +58,7 @@ class Tensor{
         /*
         @brief Getter for the TensorImpl
         */
-        std::shared_ptr<TensorImpl<T>> get_implementation() const{
+        std::shared_ptr<TensorImpl<T>> get_impl() const{
         return m_pTensor;
         }
 

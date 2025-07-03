@@ -16,7 +16,7 @@ TEST(TensorTest, ShapeIsCorrect){
 TEST(TensorTest, BasicValueTest){
     backprop::Tensor<float> t(5.5);
     EXPECT_EQ(t.item(), 5.5);
-    EXPECT_EQ(t.get_implementation()->get_data(), 5.5);
+    EXPECT_EQ(t.get_impl()->get_data(), 5.5);
 }
 
 /*
@@ -26,7 +26,7 @@ TEST(TensorTest, CopyTest){
   backprop::Tensor<float> t(1.5);
   backprop::Tensor<float> copy = t; //calls copy constructor
   EXPECT_EQ(copy.item(), 1.5);
-  EXPECT_EQ(t.get_implementation(), copy.get_implementation());
+  EXPECT_EQ(t.get_impl(), copy.get_impl());
 }
 
 /*
@@ -37,6 +37,9 @@ TEST(TensorTest, DefaultConstructor){
   EXPECT_EQ(t.item(), 0.);
 }
 
+/*
+@brief tests adding two tensors
+*/
 // TEST(TensorTest, AddTensorTest){
 //     backprop::Tensor<float> t(4.0);
 //     backprop::Tensor<float> t2(5.5);

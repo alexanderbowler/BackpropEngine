@@ -5,12 +5,18 @@
 #include "backprop/function.hpp"
 #include "test_helpers.hpp"
 
-// TEST(FunctionTest, AddFunctionTest){
+TEST(FunctionTest, AddFunctionTest){
+    backprop::Tensor<float> t(4.0);
+    backprop::Tensor<float> t2(5.5);
+    backprop::AddFunction<float> add_fn(t, t2);
+    EXPECT_EQ(add_fn.parents[0], t.get_impl()) << "AddFunction should have t as parent";
+    EXPECT_EQ(add_fn.parents[1], t2.get_impl()) << "AddFunction should have t2 as parent";
+}
+
+// TEST(FunctionTest, AddFunctionBackward){
 //     backprop::Tensor<float> t(4.0);
 //     backprop::Tensor<float> t2(5.5);
 //     backprop::AddFunction<float> add_fn(&t, &t2);
-//     EXPECT_EQ(add_fn.parents[0], &t) << "AddFunction should have t as parent";
-//     EXPECT_EQ(add_fn.parents[1], &t2) << "AddFunction should have t2 as parent";
 
 //     // test backward
 //     backprop::Tensor<float> out(9.5);
