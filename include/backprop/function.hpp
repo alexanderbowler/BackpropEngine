@@ -85,14 +85,14 @@ class AddFunction: public Function<T>{
      * 
      */
     void backward() override {
-        // assert(this->output_ != nullptr);
-        // this->parents[0]->grad_ += this->output_->grad_;
-        // this->parents[1]->grad_ += this->output_->grad_;
+        assert(this->output_ != nullptr);
+        this->parents[0]->grad_ += this->output_->grad_;
+        this->parents[1]->grad_ += this->output_->grad_;
     }
 
     void forward() override {
-        // assert(this->output_ != nullptr);
-        // this->output_->set(this->parents[0]->item() + this->parents[1]->item());
+        assert(this->output_ != nullptr);
+        this->output_->set(this->parents[0]->item() + this->parents[1]->item());
     }
 };
 /**
@@ -114,8 +114,8 @@ class MultiplyFunction : public Function<T>{
      * @param a Pointer to the first parent tensor.
      * @param b Pointer to the second parent tensor.
      */
-    MultiplyFunction(Tensor<T>* a, Tensor<T>* b){
-        this->parents = {a, b};
+    MultiplyFunction(Tensor<T> a, Tensor<T> b){
+        this->parents = {a.get_impl(), b.get_impl()};
     }
 
     /**

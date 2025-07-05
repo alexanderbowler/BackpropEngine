@@ -86,11 +86,24 @@ class Tensor{
         /*
         @brief cout operator overload for printing
         */
-    friend std::ostream& operator<<(std::ostream& os, const Tensor<T>& tensor){
-
-                os << tensor.m_pTensor->to_string();
-                return os;
+        friend std::ostream& operator<<(std::ostream& os, const Tensor<T>& tensor){
+            os << tensor.m_pTensor->to_string();
+            return os;
         }
+
+        /*
+        @brief sets the gradient of the underlying tensor
+        */
+       void set_grad(T grad){
+            m_pTensor->grad_ = grad;
+       }
+
+       /*
+       @brief get gradient of undelrying tensor
+       */
+      const T grad() const {
+        return m_pTensor->grad_;
+      }
         
     protected:
         std::shared_ptr<TensorImpl<T>> m_pTensor;
@@ -99,6 +112,9 @@ class Tensor{
 template<typename T>
 class TensorImpl{
     friend class Tensor<T>;
+    friend class Function<T>;
+    friend class AddFunction<T>;
+    friend class MultiplyFunction<T>;
     template <typename> friend class TensorTest;
     public:
         /*
@@ -135,6 +151,10 @@ class TensorImpl{
         @brief Default Constructor
         */
        TensorImpl() : data_(), shape_({}), grad_fn_ptr(nullptr), grad_(0.0){};
+
+
+        template <typename U>
+        friend void backward_function_test(backprop::Function<U>& fn);
 
         #ifdef UNIT_TEST
         const T get_data() const{
@@ -207,6 +227,28 @@ class TensorImpl{
 
 
 };
+
+/*
+@brief function test helper
+*/
+template <typename T>
+void backward_function_test(backprop::Function<T>& fn){
+            T small_addition = 0.00001;
+            T orig_output = fn.output_->item();
+            // std::cout<<"Orig output: "<<orig_output<<"\n";
+
+            fn.backward();
+            for(std::shared_ptr<backprop::TensorImpl<T>> parent: fn.parents){
+                T orig_parent_val = parent->item();
+                parent->set(orig_parent_val + small_addition);
+                fn.forward();
+                // std::cout<<"parent "<<parent->item()<<"\n";
+                // std::cout<<"Modded output: "<<fn.output_->item()<<"\n";
+                T gradient = (fn.output_->item() - orig_output) / small_addition;
+                EXPECT_NEAR(parent->grad_, gradient, 0.05);
+                parent->set(orig_parent_val);
+            }
+        }
 
 template<typename T, typename U>
 Tensor<T> operator+(Tensor<T>& lfs, Tensor<U>& rhs){
