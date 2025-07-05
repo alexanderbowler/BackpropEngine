@@ -167,8 +167,8 @@ class TanhFunction : public Function<T>{
      * 
      * @param parent Pointer to the parent tensor.
      */
-    TanhFunction(Tensor<T>* parent){
-        this->parents = {parent};
+    TanhFunction(Tensor<T> parent){
+        this->parents = {parent.get_impl()};
     }
 
     /**

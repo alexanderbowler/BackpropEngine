@@ -44,18 +44,20 @@ TEST(FunctionTest, MultiplyBackward){
     backward_function_test(multiply_fn);
 }
 
-// TEST(FunctionTest, TanhFunctionTest){
-//     backprop::Tensor<float> t(2.0);
-//     backprop::TanhFunction<float> tanh_fn(&t);
-//     EXPECT_EQ(tanh_fn.parents[0], &t);
+TEST(FunctionTest, TanhBasic){
+    backprop::Tensor<float> t(2.0);
+    backprop::TanhFunction<float> tanh_fn(t);
+    EXPECT_EQ(tanh_fn.parents[0], t.get_impl());
+}
 
-//     //test backward
-//     // tanh(x) = 2.0
-//     backprop::Tensor<float> out(0.96402758);
-//     out.grad_ = 1.0;
-//     // deriv of tanh(x) is 1-2.0^2 = -3.0, times outputis -6.0
-//     tanh_fn.set_output_tensor(&out);
-//     backprop_function_test(tanh_fn);
-//     // tanh_fn.backward();
-//     // EXPECT_EQ(t.grad_, result);
-// }
+TEST(FunctionTest, TanhBackward){
+    backprop::Tensor<float> t(2.0);
+    backprop::TanhFunction<float> tanh_fn(t);
+
+    //test backward
+    backprop::Tensor<float> out(0.96402758);
+    out.set_grad(1.0);
+    // deriv of tanh(x) is 1-2.0^2 = -3.0, times outputis -6.0
+    tanh_fn.set_output_tensor(out);
+    backward_function_test(tanh_fn);
+}

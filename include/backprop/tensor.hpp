@@ -115,6 +115,7 @@ class TensorImpl{
     friend class Function<T>;
     friend class AddFunction<T>;
     friend class MultiplyFunction<T>;
+    friend class TanhFunction<T>;
     template <typename> friend class TensorTest;
     public:
         /*
