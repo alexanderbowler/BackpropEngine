@@ -282,27 +282,38 @@ void backward_function_test(backprop::Function<T>& fn){
 }
 #endif
 
+/**
+ * @brief Add function for two tensors, uses AddFunction 
+ */
 template<typename T, typename U>
-Tensor<T> operator+(const Tensor<T>& lfs, const Tensor<U>& rhs){
+Tensor<T> operator+(const Tensor<T> lfs, const Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot add tensors of two different data types");
     
     return Tensor<T>(lfs.item() + rhs.item(), std::make_shared<AddFunction<T>>(lfs, rhs));
 }
 
-// template<typename T, typename U>
-// Tensor<T> operator+(Tensor<T>& lfs, U val){
-//     static_assert(std::is_same<T, U>::value, 
-//                     "Cannot add tensors of two different data types");
-//     Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
-//     return lfs+(*p_rhs);
-// }
+/**
+ * @brief adds a tensor to a constant
+ */
+template<typename T, typename U>
+Tensor<T> operator+(Tensor<T>& lfs, U val){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot add tensors of two different data types");
+    return lfs+Tensor<T>(val);
+}
 
-// template<typename T, typename U>
-// Tensor<T> operator+(U val, Tensor<T>& rhs){
-//     return rhs+val;
-// }
+/**
+ * @brief overloaded addition of constant with tensor
+ */
+template<typename T, typename U>
+Tensor<T> operator+(U val, Tensor<T>& rhs){
+    return rhs+val;
+}
 
+/**
+ * @brief Multiply function for two tensors, creates and uses MultiplyFunction
+ */
 template<typename T, typename U>
 Tensor<T> operator*(Tensor<T> lfs, Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 

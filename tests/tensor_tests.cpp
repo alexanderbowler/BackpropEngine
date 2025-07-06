@@ -208,18 +208,17 @@ TEST(TensorTest, MultiplyWithConstants){
   EXPECT_EQ(res2.item(), 4.5);
 }
 
-// TEST(TensorTest, AddWithConstants){
-//   backprop::Tensor<float> t(1.5);
-//   backprop::Tensor<float> res = t+2.0f;
-//   EXPECT_EQ(res.item(), 3.5);
-//   res.grad_ = 1.0;
-//   res.backward();
-//   EXPECT_EQ(t.grad_, 1.0);
-//   backprop::Tensor<float> res2 = 3.0f+t;
-//   EXPECT_EQ(res2.item(), 4.5);
-//   EXPECT_EQ(res2.grad_fn_ptr->parents[1]->item(), 3.0);
-//   EXPECT_EQ(res2.grad_fn_ptr->parents[1], backprop::ConstantRegistry<float>::get_constant(3.0f));
-// }
+TEST(TensorTest, AddWithConstants){
+  backprop::Tensor<float> t(1.5);
+  backprop::Tensor<float> res = t+2.0f;
+  EXPECT_EQ(res.item(), 3.5);
+  res.set_grad(1.0);
+  res.backward();
+  EXPECT_EQ(t.grad(), 1.0);
+  backprop::Tensor<float> res2 = 3.0f+t;
+  EXPECT_EQ(res2.item(), 4.5);
+  EXPECT_EQ(res2.get_func_ptr()->parents[1]->get_data(), 3.0);
+}
 
 // // TEST(TensorTest, SubtractOp){
 // //   backprop::Tensor<float> t(2.5);
