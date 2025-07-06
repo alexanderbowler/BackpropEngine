@@ -176,6 +176,9 @@ class TensorImpl: public std::enable_shared_from_this<TensorImpl<T>>{
         template <typename U>
         friend void backward_function_test(backprop::Function<U>& fn);
 
+        /**
+         * @brief function for test which exposes data to public
+         */
         const T get_data() const{
             return this->data_;
         }
@@ -301,25 +304,28 @@ Tensor<T> operator+(const Tensor<T>& lfs, const Tensor<U>& rhs){
 // }
 
 template<typename T, typename U>
-Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
+Tensor<T> operator*(Tensor<T> lfs, Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot multiply tensors of two different data types");
     
     return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(lfs, rhs));
 }
 
-// template<typename T, typename U>
-// Tensor<T> operator*(Tensor<T>& lfs, U val){
-//     static_assert(std::is_same<T, U>::value, 
-//                     "Cannot multiply tensors of two different data types");
-//     Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
-//     return lfs* (*p_rhs);
-// }
+/**
+ * @brief Multiplication function for tensors with constants
+ */
+template<typename T, typename U>
+Tensor<T> operator*(Tensor<T>& lfs, U val){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot multiply tensors of two different data types");
+    // the temp tensor here creates a shared_ptr that is then used within the func later
+    return lfs * Tensor<U>(val);
+}
 
-// template<typename T, typename U>
-// Tensor<T> operator*(U val, Tensor<T>& rhs){
-//     return rhs*val;
-// }
+template<typename T, typename U>
+Tensor<T> operator*(U val, Tensor<T>& rhs){
+    return rhs*val;
+}
 
 template <typename T>
 Tensor<T> tanh(Tensor<T>& t){

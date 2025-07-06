@@ -196,18 +196,17 @@ TEST(TensorTest, DoubleUseBackpropogation){
   EXPECT_EQ(t.grad(), 16.5);    
 }
 
-// TEST(TensorTest, MultiplyWithConstants){
-//   backprop::Tensor<float> t(1.5);
-//   backprop::Tensor<float> res = t*2.0f;
-//   EXPECT_EQ(res.item(), 3.0);
-//   EXPECT_EQ(res.grad_fn_ptr->parents[1]->item(), 2.0f);
-//   EXPECT_EQ(res.grad_fn_ptr->parents[1], backprop::ConstantRegistry<float>::get_constant(2.0f));
-//   res.grad_ = 1.0;
-//   res.backward();
-//   EXPECT_EQ(t.grad_, 2.0);
-//   backprop::Tensor<float> res2 = 3.0f*t;
-//   EXPECT_EQ(res2.item(), 4.5);
-// }
+TEST(TensorTest, MultiplyWithConstants){
+  backprop::Tensor<float> t(1.5);
+  backprop::Tensor<float> res = t*2.0f;
+  EXPECT_EQ(res.item(), 3.0);
+  EXPECT_EQ(res.get_func_ptr()->parents[1]->get_data(), 2.0f);
+  res.set_grad(1.0);
+  res.backward();
+  EXPECT_EQ(t.grad(), 2.0);
+  backprop::Tensor<float> res2 = 3.0f*t;
+  EXPECT_EQ(res2.item(), 4.5);
+}
 
 // TEST(TensorTest, AddWithConstants){
 //   backprop::Tensor<float> t(1.5);
