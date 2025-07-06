@@ -286,21 +286,21 @@ void backward_function_test(backprop::Function<T>& fn){
  * @brief Add function for two tensors, uses AddFunction 
  */
 template<typename T, typename U>
-Tensor<T> operator+(const Tensor<T> lfs, const Tensor<U> rhs){
+Tensor<T> operator+(const Tensor<T> lhs, const Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot add tensors of two different data types");
     
-    return Tensor<T>(lfs.item() + rhs.item(), std::make_shared<AddFunction<T>>(lfs, rhs));
+    return Tensor<T>(lhs.item() + rhs.item(), std::make_shared<AddFunction<T>>(lhs, rhs));
 }
 
 /**
  * @brief adds a tensor to a constant
  */
 template<typename T, typename U>
-Tensor<T> operator+(Tensor<T>& lfs, U val){
+Tensor<T> operator+(Tensor<T>& lhs, U val){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot add tensors of two different data types");
-    return lfs+Tensor<T>(val);
+    return lhs+Tensor<T>(val);
 }
 
 /**
@@ -315,29 +315,35 @@ Tensor<T> operator+(U val, Tensor<T>& rhs){
  * @brief Multiply function for two tensors, creates and uses MultiplyFunction
  */
 template<typename T, typename U>
-Tensor<T> operator*(Tensor<T> lfs, Tensor<U> rhs){
+Tensor<T> operator*(Tensor<T> lhs, Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot multiply tensors of two different data types");
     
-    return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(lfs, rhs));
+    return Tensor<T>(lhs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(lhs, rhs));
 }
 
 /**
  * @brief Multiplication function for tensors with constants
  */
 template<typename T, typename U>
-Tensor<T> operator*(Tensor<T>& lfs, U val){
+Tensor<T> operator*(Tensor<T>& lhs, U val){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot multiply tensors of two different data types");
     // the temp tensor here creates a shared_ptr that is then used within the func later
-    return lfs * Tensor<U>(val);
+    return lhs * Tensor<U>(val);
 }
 
+/**
+ * @brief Multiplication function for tensors with constants
+ */
 template<typename T, typename U>
 Tensor<T> operator*(U val, Tensor<T>& rhs){
     return rhs*val;
 }
 
+/**
+ * @brief Tanh function for tensor
+ */
 template <typename T>
 Tensor<T> tanh(Tensor<T>& t){
     T data = t.item();
@@ -347,12 +353,35 @@ Tensor<T> tanh(Tensor<T>& t){
                     std::make_shared<TanhFunction<T>>(t));
 }
 
+/**
+ * @brief Subtract function between two tensors
+ */
 template<typename T, typename U>
-Tensor<T> operator-(Tensor<T>& lfs, Tensor<U>& rhs){
+Tensor<T> operator-(Tensor<T> lhs, Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot subtract tensors of two different data types");
     
-    return lfs + (rhs * static_cast<T>(-1.0));
+    return lhs + (rhs * Tensor<T>(-1.0));
+}
+
+/**
+ * @brief Subtract function tensor and constant
+ */
+template <typename T, typename U>
+Tensor<T> operator-(Tensor<T> lhs, U val){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot subtract tensors of two different data types");
+    return lhs + Tensor<T>(-1 * val);
+}
+
+/**
+ * @brief Subtract function tensor and constant
+ */
+template <typename T, typename U>
+Tensor<T> operator-(T val, Tensor<U> rhs){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot subtract tensors of two different data types");
+    return Tensor<T>(val) - rhs;
 }
 
 }

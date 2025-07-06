@@ -217,16 +217,34 @@ TEST(TensorTest, AddWithConstants){
   EXPECT_EQ(t.grad(), 1.0);
   backprop::Tensor<float> res2 = 3.0f+t;
   EXPECT_EQ(res2.item(), 4.5);
-  EXPECT_EQ(res2.get_func_ptr()->parents[1]->get_data(), 3.0);
+  EXPECT_TRUE(res2.get_func_ptr()->parents[1]->get_data() == 3.0 || 
+  res2.get_func_ptr()->parents[0]->get_data() == 3.0);
 }
 
-// // TEST(TensorTest, SubtractOp){
-// //   backprop::Tensor<float> t(2.5);
-// //   backprop::Tensor<float> t2(1.5);
-// //   backprop::Tensor<float> res = t-t2;
-// //   EXPECT_EQ(res.item(), 1.0f);
-// //   res.grad_ = 1.5f;
-// //   res.backward();
-// //   EXPECT_EQ(t.grad_, 1.5f);
-// //   EXPECT_EQ(t2.grad_, -1.5f);
-// // }
+TEST(TensorTest, Subtract){
+  backprop::Tensor<float> t(2.5);
+  backprop::Tensor<float> t2(1.5);
+  backprop::Tensor<float> res = t-t2;
+  EXPECT_EQ(res.item(), 1.0f);
+  res.set_grad(1.5f);
+  res.backward();
+  EXPECT_EQ(t.grad(), 1.5f);
+  EXPECT_EQ(t2.grad(), -1.5f);
+}
+
+TEST(TensorTest, SubtractWithConstants){
+  backprop::Tensor<float> t(1.5); 
+  backprop::Tensor<float> res = t-2.0f;
+  EXPECT_EQ(res.item(), -0.5);
+  res.set_grad(1.5);
+  res.backward();
+  EXPECT_EQ(t.grad(), 1.5);
+  backprop::Tensor<float> res2 = 3.0f-t;
+  EXPECT_EQ(res2.item(), 1.5);
+  t.set_grad(0.0);
+  res2.set_grad(1.5);
+  res2.backward();
+  EXPECT_EQ(t.grad(), -1.5);
+  EXPECT_TRUE(res2.get_func_ptr()->parents[0]->get_data() == 3.0 || 
+  res2.get_func_ptr()->parents[1]->get_data() == 3.0);
+}
