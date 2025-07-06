@@ -40,16 +40,17 @@ TEST(TensorTest, DefaultConstructor){
 /*
 @brief tests adding two tensors
 */
-// TEST(TensorTest, AddTensorTest){
-//     backprop::Tensor<float> t(4.0);
-//     backprop::Tensor<float> t2(5.5);
-//     backprop::Tensor<float> sum = t+t2;
-//     EXPECT_EQ(sum.item(), 9.5);
-//     EXPECT_NE(sum.grad_fn_ptr, nullptr);
-//     EXPECT_EQ(sum.grad_fn_ptr->output_, &sum);
-//     EXPECT_EQ(sum.grad_fn_ptr->parents[0], &t);
-//     EXPECT_EQ(sum.grad_fn_ptr->parents[1], &t2);
-// }
+TEST(TensorTest, AddTensorTest){
+    backprop::Tensor<float> t(4.0);
+    backprop::Tensor<float> t2(5.5);
+    backprop::Tensor<float> sum = t+t2;
+    EXPECT_EQ(sum.item(), 9.5);
+    std::shared_ptr<backprop::Function<float>> grad_fn_ptr = sum.get_func_ptr();
+    EXPECT_NE(grad_fn_ptr, nullptr);
+    EXPECT_EQ(grad_fn_ptr->output_, sum.get_impl());
+    EXPECT_EQ(grad_fn_ptr->parents[0], t.get_impl());
+    EXPECT_EQ(grad_fn_ptr->parents[1], t2.get_impl());
+}
 
 // TEST(TensorTest, AddBackwardTest){
 //     backprop::Tensor<float> t(4.0);

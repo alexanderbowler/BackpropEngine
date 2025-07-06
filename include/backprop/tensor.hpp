@@ -45,15 +45,17 @@ class Tensor{
         version for lvalues
         */
         Tensor(T value, const std::shared_ptr<Function<T>>& grad_fn){
-            m_pTensor = std::make_shared<TensorImpl<T>>(value, grad_fn);
+            m_pTensor = std::make_shared<TensorImpl<T>>(value);
+            grad_fn->set_output_tensor(m_pTensor);
+            m_pTensor->set_grad_fn(grad_fn);
         }
 
         /*
         @brief Constructor with grad_fn, for rvalues
         */
-        Tensor(T value, std::shared_ptr<Function<T>> grad_fn){
-        m_pTensor = std::make_shared<TensorImpl<T>>(value, grad_fn);
-        }
+        // Tensor(T value, std::shared_ptr<Function<T>> grad_fn){
+        // m_pTensor = std::make_shared<TensorImpl<T>>(value, grad_fn);
+        // }
 
         /*
         @brief Getter for the TensorImpl
@@ -86,31 +88,37 @@ class Tensor{
         /*
         @brief cout operator overload for printing
         */
-        friend std::ostream& operator<<(std::ostream& os, const Tensor<T>& tensor){
-            os << tensor.m_pTensor->to_string();
-            return os;
+            friend std::ostream& operator<<(std::ostream& os, const Tensor<T>& tensor){
+                os << tensor.m_pTensor->to_string();
+                return os;
+            }
+
+            /*
+            @brief sets the gradient of the underlying tensor
+            */
+        void set_grad(T grad){
+                m_pTensor->grad_ = grad;
         }
 
         /*
-        @brief sets the gradient of the underlying tensor
+        @brief get gradient of undelrying tensor
         */
-       void set_grad(T grad){
-            m_pTensor->grad_ = grad;
-       }
+        const T grad() const {
+            return m_pTensor->grad_;
+        }
 
-       /*
-       @brief get gradient of undelrying tensor
-       */
-      const T grad() const {
-        return m_pTensor->grad_;
-      }
+        #ifdef UNIT_TEST
+        const std::shared_ptr<Function<T>> get_func_ptr() const{
+        return m_pTensor->grad_fn_ptr;
+        }
+        #endif
         
     protected:
         std::shared_ptr<TensorImpl<T>> m_pTensor;
 };
 
 template<typename T>
-class TensorImpl{
+class TensorImpl: public std::enable_shared_from_this<TensorImpl<T>>{
     friend class Tensor<T>;
     friend class Function<T>;
     friend class AddFunction<T>;
@@ -141,23 +149,21 @@ class TensorImpl{
         }
 
         /*
-        @brief Constructor with value and grad_fn
-        */
-        TensorImpl(T value, const std::shared_ptr<Function<T>>& grad_fn): 
-            data_(value), shape_({}), grad_fn_ptr(grad_fn), grad_(0.0) {
-                grad_fn->set_output_tensor(this);
-        }
-
-        /*
         @brief Default Constructor
         */
        TensorImpl() : data_(), shape_({}), grad_fn_ptr(nullptr), grad_(0.0){};
 
+        /*
+        @brief Sets the grad_function for the tensor implementation
+        */
+        void set_grad_fn(const std::shared_ptr<Function<T>>& grad_fn){
+            grad_fn_ptr = grad_fn;
+        }
 
+        #ifdef UNIT_TEST
         template <typename U>
         friend void backward_function_test(backprop::Function<U>& fn);
 
-        #ifdef UNIT_TEST
         const T get_data() const{
             return this->data_;
         }
@@ -229,34 +235,36 @@ class TensorImpl{
 
 };
 
+#ifdef UNIT_TEST
 /*
 @brief function test helper
 */
 template <typename T>
 void backward_function_test(backprop::Function<T>& fn){
-            T small_addition = 0.00001;
-            T orig_output = fn.output_->item();
-            // std::cout<<"Orig output: "<<orig_output<<"\n";
+    T small_addition = 0.00001;
+    T orig_output = fn.output_->item();
+    // std::cout<<"Orig output: "<<orig_output<<"\n";
 
-            fn.backward();
-            for(std::shared_ptr<backprop::TensorImpl<T>> parent: fn.parents){
-                T orig_parent_val = parent->item();
-                parent->set(orig_parent_val + small_addition);
-                fn.forward();
-                // std::cout<<"parent "<<parent->item()<<"\n";
-                // std::cout<<"Modded output: "<<fn.output_->item()<<"\n";
-                T gradient = (fn.output_->item() - orig_output) / small_addition;
-                EXPECT_NEAR(parent->grad_, gradient, 0.05);
-                parent->set(orig_parent_val);
-            }
-        }
+    fn.backward();
+    for(std::shared_ptr<backprop::TensorImpl<T>> parent: fn.parents){
+        T orig_parent_val = parent->item();
+        parent->set(orig_parent_val + small_addition);
+        fn.forward();
+        // std::cout<<"parent "<<parent->item()<<"\n";
+        // std::cout<<"Modded output: "<<fn.output_->item()<<"\n";
+        T gradient = (fn.output_->item() - orig_output) / small_addition;
+        EXPECT_NEAR(parent->grad_, gradient, 0.05);
+        parent->set(orig_parent_val);
+    }
+}
+#endif
 
 template<typename T, typename U>
-Tensor<T> operator+(Tensor<T>& lfs, Tensor<U>& rhs){
+Tensor<T> operator+(const Tensor<T>& lfs, const Tensor<U>& rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot add tensors of two different data types");
     
-    return Tensor<T>(lfs.item() + rhs.item(), std::make_shared<AddFunction<T>>(&lfs, &rhs));
+    return Tensor<T>(lfs.item() + rhs.item(), std::make_shared<AddFunction<T>>(lfs, rhs));
 }
 
 // template<typename T, typename U>

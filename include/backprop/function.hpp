@@ -53,6 +53,13 @@ class Function{
         void set_output_tensor(Tensor<T> o){
             this->output_ = o.get_impl();
         }
+
+        /*
+        * @brief Overload setting output tensor via TensorImplmentation ptr
+        */
+        void set_output_tensor(std::shared_ptr<TensorImpl<T>>& o){
+                this->output_ = o;
+        }
 };
 
 /**
