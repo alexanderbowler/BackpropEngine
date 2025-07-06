@@ -52,15 +52,15 @@ TEST(TensorTest, AddTensorTest){
     EXPECT_EQ(grad_fn_ptr->parents[1], t2.get_impl());
 }
 
-// TEST(TensorTest, AddBackwardTest){
-//     backprop::Tensor<float> t(4.0);
-//     backprop::Tensor<float> t2(5.5);
-//     backprop::Tensor<float> sum = t+t2;
-//     sum.grad_ = 1.0;
-//     sum.backward();
-//     EXPECT_EQ(t.grad_, 1.0);
-//     EXPECT_EQ(t2.grad_, 1.0);
-// }
+TEST(TensorTest, AddBackwardTest){
+    backprop::Tensor<float> t(4.0);
+    backprop::Tensor<float> t2(5.5);
+    backprop::Tensor<float> sum = t+t2;
+    sum.set_grad(1.0);
+    sum.backward();
+    EXPECT_EQ(t.grad(), 1.0);
+    EXPECT_EQ(t2.grad(), 1.0);
+}
 
 // TEST(TensorTest, MultiplyTest){
 //     backprop::Tensor<float> t(4.0);

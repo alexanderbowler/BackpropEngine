@@ -107,10 +107,22 @@ class Tensor{
             return m_pTensor->grad_;
         }
 
+        /**
+         * @brief computes the backward pass of the computational graph held by this tensor
+         */
+        void backward() const {
+            m_pTensor->backward();
+        }
+
         #ifdef UNIT_TEST
+        /**
+         * @brief test function to expose the grad_fn_ptr
+         */
         const std::shared_ptr<Function<T>> get_func_ptr() const{
         return m_pTensor->grad_fn_ptr;
         }
+
+
         #endif
         
     protected:
@@ -185,52 +197,60 @@ class TensorImpl: public std::enable_shared_from_this<TensorImpl<T>>{
 
         // Calls the corresponding backward function
         // REQUIRES: The gradient for this tensor is set
-        // void backward(){
-        //     assert(grad_fn_ptr != nullptr);
-        //     std::vector<TensorImpl<T>*> graph;
-        //     build_topograph(graph, this);
-        //     for(TensorImpl<T>* node: graph){
-        //         node->grad_fn_ptr->backward();
-        //     }
-        // }   
+        void backward(){
+            assert(grad_fn_ptr != nullptr);
+            std::vector<TensorImpl<T>*> graph;
+            build_topograph(graph, this);
+            for(TensorImpl<T>* node: graph){
+                node->grad_fn_ptr->backward();
+            }
+        }   
 
         
 
         std::shared_ptr<Function<T>> grad_fn_ptr;
         T grad_;
-    protected:
         T data_;
         std::vector<int> shape_;
 
-        // Builds a topological graph for backpropogation
-        // void build_topograph(
-        //     std::vector<Tensor<T>*>& graph,
-        //     Tensor<T>* t
-        //     ){
-        //     std::unordered_set<Tensor<T>*> visited;
-        //     build_topo_recursive(graph, t, visited);
-        //     // This actually physically reverses the values in memory in future might just change 
-        //     // the access order for more efficiency
-        //     std::reverse(graph.begin(), graph.end());
-        //     graph.shrink_to_fit();
-        // }
+        /**
+         * @brief Builds a topological graph for backpropogation
+         * @param graph graph to be built of TensorImpl pointers
+         * @param t tensorImpl pointer of the beginning of the graph
+         */
+        void build_topograph(
+            std::vector<TensorImpl<T>*>& graph,
+            TensorImpl<T>* t
+            ){
+            std::unordered_set<TensorImpl<T>*> visited;
+            build_topo_recursive(graph, t, visited);
+            // This actually physically reverses the values in memory in future might just change 
+            // the access order for more efficiency
+            std::reverse(graph.begin(), graph.end());
+            graph.shrink_to_fit();
+        }
 
-        // // recursive helper function to build the topological graph
-        // // only adds tensors to the graph which have a grad_fn_ptr, ie 
-        // // tensors thats have parents / a backwards function to call
-        // void build_topo_recursive(
-        //     std::vector<Tensor<T>*>& graph,
-        //     Tensor<T>* t, 
-        //     std::unordered_set<Tensor<T>*>& visited
-        // ){
-        //     if(visited.count(t) || t->grad_fn_ptr == nullptr)
-        //             return;
-        //     visited.insert(t);
-        //     for(Tensor<T>* parent : t->grad_fn_ptr->parents){
-        //         build_topo_recursive(graph, parent, visited);
-        //     }
-        //     graph.push_back(t);
-        // }
+        /**
+         * @brief recursive helper function to build the topological graph
+         * only adds tensors to the graph which have a grad_fn_ptr, ie 
+         * tensors thats have parents / a backwards function to call
+         * @param graph graph which holds the tensorImpl pointers
+         * @param t current tensor which we are looking at all parents from
+         * @param visited set of TensorImpl pointers which have already been visited
+         */
+        void build_topo_recursive(
+            std::vector<TensorImpl<T>*>& graph,
+            TensorImpl<T>* t, 
+            std::unordered_set<TensorImpl<T>*>& visited
+        ){
+            if(visited.count(t) || t->grad_fn_ptr == nullptr)
+                    return;
+            visited.insert(t);
+            for(std::shared_ptr<TensorImpl<T>>& parent : t->grad_fn_ptr->parents){
+                build_topo_recursive(graph, parent.get(), visited);
+            }
+            graph.push_back(t);
+        }
 
 
 };
