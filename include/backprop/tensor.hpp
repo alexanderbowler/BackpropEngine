@@ -305,21 +305,21 @@ Tensor<T> operator*(Tensor<T>& lfs, Tensor<U>& rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot multiply tensors of two different data types");
     
-    return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(&lfs, &rhs));
+    return Tensor<T>(lfs.item() * rhs.item(), std::make_shared<MultiplyFunction<T>>(lfs, rhs));
 }
 
-template<typename T, typename U>
-Tensor<T> operator*(Tensor<T>& lfs, U val){
-    static_assert(std::is_same<T, U>::value, 
-                    "Cannot multiply tensors of two different data types");
-    Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
-    return lfs* (*p_rhs);
-}
+// template<typename T, typename U>
+// Tensor<T> operator*(Tensor<T>& lfs, U val){
+//     static_assert(std::is_same<T, U>::value, 
+//                     "Cannot multiply tensors of two different data types");
+//     Tensor<T>* p_rhs = ConstantRegistry<T>::get_constant(val);
+//     return lfs* (*p_rhs);
+// }
 
-template<typename T, typename U>
-Tensor<T> operator*(U val, Tensor<T>& rhs){
-    return rhs*val;
-}
+// template<typename T, typename U>
+// Tensor<T> operator*(U val, Tensor<T>& rhs){
+//     return rhs*val;
+// }
 
 template <typename T>
 Tensor<T> tanh(Tensor<T>& t){
@@ -327,7 +327,7 @@ Tensor<T> tanh(Tensor<T>& t){
     T pos_exp = std::exp(data);
     T neg_exp = std::exp(-1*data);
     return Tensor<T>((pos_exp-neg_exp)/(pos_exp+neg_exp), 
-                    std::make_shared<TanhFunction<T>>(&t));
+                    std::make_shared<TanhFunction<T>>(t));
 }
 
 template<typename T, typename U>
