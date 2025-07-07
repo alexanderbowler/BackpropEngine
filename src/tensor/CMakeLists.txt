@@ -7,10 +7,13 @@ target_include_directories(tensor PUBLIC
 
 # Test library that includes gtest for tests
 add_library(tensor_test_library STATIC 
-    tensor.cpp function.cpp constantRegistry.cpp
+    tensor.cpp function.cpp
 )
 
 target_compile_definitions(tensor_test_library PRIVATE UNIT_TEST)
 target_include_directories(tensor_test_library PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
+
+# Link gtest to the test library
+target_link_libraries(tensor_test_library PRIVATE gtest_main)

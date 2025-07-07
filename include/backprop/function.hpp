@@ -12,8 +12,12 @@ Includes the function classes which represent which functions we can call betwee
 
 namespace backprop{
 
+// Forward Declarations
 template <typename T>
 class Tensor;
+
+template <typename T>
+class TensorImpl;
 
 /**
  * @brief Base Function class to be inherited by specific operation functions.
@@ -27,10 +31,12 @@ class Tensor;
 template <typename T>
 class Function{
     public:
-        // pointer to the parent tensors, Note does not pass ownership
-        std::vector<Tensor<T>*> parents;
-        // pointer to the tensor that the function created
-        Tensor<T>* output_ = nullptr;
+        // shared pointer to the parent tensors
+        std::vector<std::shared_ptr<TensorImpl<T>>> parents;
+
+        // pointer to the tensor that the function creates, DOES NOT HAVE OWNERSHIP
+        TensorImpl<T>* output_ = nullptr;
+
         virtual void backward() = 0;  
         virtual void forward() = 0;
 
@@ -44,8 +50,15 @@ class Function{
          * 
          * @param o Pointer to the tensor created by this function.
          */
-        void set_output_tensor(Tensor<T>* o){
-            this->output_ = o;
+        void set_output_tensor(const Tensor<T>& o){
+            this->output_ = o.get_impl().get();
+        }
+
+        /*
+        * @brief Overload setting output tensor via TensorImplmentation ptr
+        */
+        void set_output_tensor(const std::shared_ptr<TensorImpl<T>>& o){
+                this->output_ = o.get();
         }
 };
 
@@ -68,8 +81,8 @@ class AddFunction: public Function<T>{
      * @param a Pointer to the first parent tensor.
      * @param b Pointer to the second parent tensor.
      */
-    AddFunction(Tensor<T>* a, Tensor<T>* b){
-        this->parents = {a, b};
+    AddFunction(Tensor<T> a, Tensor<T> b){
+        this->parents = {a.get_impl(), b.get_impl()};
     }
 
     /**
@@ -108,8 +121,8 @@ class MultiplyFunction : public Function<T>{
      * @param a Pointer to the first parent tensor.
      * @param b Pointer to the second parent tensor.
      */
-    MultiplyFunction(Tensor<T>* a, Tensor<T>* b){
-        this->parents = {a, b};
+    MultiplyFunction(Tensor<T> a, Tensor<T> b){
+        this->parents = {a.get_impl(), b.get_impl()};
     }
 
     /**
@@ -161,8 +174,8 @@ class TanhFunction : public Function<T>{
      * 
      * @param parent Pointer to the parent tensor.
      */
-    TanhFunction(Tensor<T>* parent){
-        this->parents = {parent};
+    TanhFunction(Tensor<T> parent){
+        this->parents = {parent.get_impl()};
     }
 
     /**
