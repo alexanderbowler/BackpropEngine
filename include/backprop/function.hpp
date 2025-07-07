@@ -34,8 +34,8 @@ class Function{
         // shared pointer to the parent tensors
         std::vector<std::shared_ptr<TensorImpl<T>>> parents;
 
-        // shared pointer to the tensor that the function creates
-        std::shared_ptr<TensorImpl<T>> output_ = nullptr;
+        // pointer to the tensor that the function creates, DOES NOT HAVE OWNERSHIP
+        TensorImpl<T>* output_ = nullptr;
 
         virtual void backward() = 0;  
         virtual void forward() = 0;
@@ -51,14 +51,14 @@ class Function{
          * @param o Pointer to the tensor created by this function.
          */
         void set_output_tensor(const Tensor<T>& o){
-            this->output_ = o.get_impl();
+            this->output_ = o.get_impl().get();
         }
 
         /*
         * @brief Overload setting output tensor via TensorImplmentation ptr
         */
         void set_output_tensor(const std::shared_ptr<TensorImpl<T>>& o){
-                this->output_ = o;
+                this->output_ = o.get();
         }
 };
 

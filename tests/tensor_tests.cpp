@@ -47,7 +47,7 @@ TEST(TensorTest, Add){
   EXPECT_EQ(sum.item(), 9.5);
   std::shared_ptr<backprop::Function<float>> grad_fn_ptr = sum.get_func_ptr();
   EXPECT_NE(grad_fn_ptr, nullptr);
-  EXPECT_EQ(grad_fn_ptr->output_, sum.get_impl());
+  EXPECT_EQ(grad_fn_ptr->output_, sum.get_impl().get());
   EXPECT_EQ(grad_fn_ptr->parents[0], t.get_impl());
   EXPECT_EQ(grad_fn_ptr->parents[1], t2.get_impl());
 }
@@ -69,7 +69,7 @@ TEST(TensorTest, Multiply){
   EXPECT_EQ(product.item(), 22.0);
   std::shared_ptr<backprop::Function<float>> grad_fn_ptr = product.get_func_ptr();
   EXPECT_NE(grad_fn_ptr, nullptr);
-  EXPECT_EQ(grad_fn_ptr->output_, product.get_impl());
+  EXPECT_EQ(grad_fn_ptr->output_, product.get_impl().get());
   EXPECT_EQ(grad_fn_ptr->parents[0], t.get_impl());
   EXPECT_EQ(grad_fn_ptr->parents[1], t2.get_impl());
 }
@@ -91,7 +91,7 @@ TEST(TensorTest, TanhForward){
   EXPECT_NEAR(logits.item(), result, 0.0001);
   std::shared_ptr<backprop::Function<float>> grad_fn_ptr = logits.get_func_ptr();
   EXPECT_NE(grad_fn_ptr, nullptr);
-  EXPECT_EQ(grad_fn_ptr->output_, logits.get_impl());
+  EXPECT_EQ(grad_fn_ptr->output_, logits.get_impl().get());
 }
 
 TEST(TensorTest, TanhBackward){
