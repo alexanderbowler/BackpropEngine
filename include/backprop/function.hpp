@@ -50,14 +50,14 @@ class Function{
          * 
          * @param o Pointer to the tensor created by this function.
          */
-        void set_output_tensor(Tensor<T> o){
+        void set_output_tensor(const Tensor<T>& o){
             this->output_ = o.get_impl();
         }
 
         /*
         * @brief Overload setting output tensor via TensorImplmentation ptr
         */
-        void set_output_tensor(std::shared_ptr<TensorImpl<T>>& o){
+        void set_output_tensor(const std::shared_ptr<TensorImpl<T>>& o){
                 this->output_ = o;
         }
 };
