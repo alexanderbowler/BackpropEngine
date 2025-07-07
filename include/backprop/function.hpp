@@ -2,6 +2,7 @@
 #include <vector>
 #include <cassert>
 #include <memory>
+#include <cmath>
 /*
 Jun 8 2025
 Alex Bowler
@@ -202,6 +203,50 @@ class TanhFunction : public Function<T>{
         T pos_exp = std::exp(data);
         T neg_exp = std::exp(-1*data);
         this->output_->set((pos_exp-neg_exp)/(pos_exp+neg_exp));
+    }
+};
+
+/**
+ * @brief Function representing expoentiation e^x
+ * 
+ * The ExpFunction class implements the e^x function in the computation graph.
+ * It stores a pointer to the parent tensor. During backpropagation, the gradient from the output
+ * is propagated to the parent tensor using the derivative of e^x which is e^x
+ * 
+ * @tparam T The data type of the tensor elements (e.g., float, double).
+ */
+template <typename T>
+class ExpFunction : public Function<T>{
+    public:
+    /**
+     * @brief Constructs a ExpFunction with a parent tensor.
+     * 
+     * @param parent parent tensor.
+     */
+    ExpFunction(Tensor<T> parent){
+        this->parents = {parent.get_impl()};
+    }
+
+    /**
+     * @brief Backward pass for the e^x operation.
+     * 
+     * Propagates the output gradient to the parent tensor using the derivative of e^x.
+     * 
+     * @param output The output tensor from which the gradient is propagated.
+     */
+    void backward() override {
+        assert(this->output_ != nullptr);
+        this->parents[0]->grad_ += this->output_->grad_ * this->output_->item();
+    }
+
+    /**
+     * @brief Forward pass of e^x operation
+     * 
+     * Calculates the forward operation of e^x 
+     */
+    void forward() override{
+        assert(this->output_ != nullptr);
+        this->output_->set(exp(this->parents[0]->item()));
     }
 };
 

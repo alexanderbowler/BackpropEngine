@@ -135,6 +135,7 @@ class TensorImpl: public std::enable_shared_from_this<TensorImpl<T>>{
     friend class AddFunction<T>;
     friend class MultiplyFunction<T>;
     friend class TanhFunction<T>;
+    friend class ExpFunction<T>;
     template <typename> friend class TensorTest;
     public:
         /*

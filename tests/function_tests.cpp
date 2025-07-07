@@ -61,3 +61,23 @@ TEST(FunctionTest, TanhBackward){
     tanh_fn.set_output_tensor(out);
     backward_function_test(tanh_fn);
 }
+
+TEST(FunctionTest, ExpBasic){
+    backprop::Tensor<float> t(2.0);
+    backprop::ExpFunction<float> exp_fn(t);
+    EXPECT_EQ(exp_fn.parents[0], t.get_impl());
+    backprop::Tensor<float> out;
+    exp_fn.set_output_tensor(out);
+    exp_fn.forward();
+    EXPECT_NEAR(out.item(), 7.389, 0.01);
+}
+
+TEST(FunctionTest, ExpBackward){
+    backprop::Tensor<float> t(2.0);
+    backprop::ExpFunction<float> exp_fn(t);
+    backprop::Tensor<float> out;
+    exp_fn.set_output_tensor(out);
+    exp_fn.forward();
+    out.set_grad(1.0);
+    backward_function_test(exp_fn);
+}
