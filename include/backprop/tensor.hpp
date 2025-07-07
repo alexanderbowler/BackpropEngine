@@ -9,7 +9,6 @@
 #include <cmath>
 
 #include "function.hpp"
-#include "constantRegistry.hpp"
 
 
 namespace backprop{

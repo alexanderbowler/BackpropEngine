@@ -2,7 +2,6 @@
 #include <iostream>
 #include "backprop/tensor.hpp"
 #include "backprop/function.hpp"
-#include "backprop/constantRegistry.hpp"
 #include <cassert>
 #include <typeinfo>
 
