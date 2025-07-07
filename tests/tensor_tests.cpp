@@ -15,8 +15,8 @@ TEST(TensorTest, ShapeIsCorrect){
 
 TEST(TensorTest, BasicValueTest){
   backprop::Tensor<float> t(5.5);
-  EXPECT_EQ(t.item(), 5.5);
-  EXPECT_EQ(t.get_impl()->get_data(), 5.5);
+  EXPECT_FLOAT_EQ(t.item(), 5.5);
+  EXPECT_FLOAT_EQ(t.get_impl()->get_data(), 5.5);
 }
 
 /*
