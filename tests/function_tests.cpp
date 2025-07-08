@@ -81,3 +81,24 @@ TEST(FunctionTest, ExpBackward){
     out.set_grad(1.0);
     backward_function_test(exp_fn);
 }
+
+TEST(FunctionTest, PowFoward){
+    backprop::Tensor<float> t(2.0);
+    backprop::PowFunction<float, float> pow_fn(t, 3.0);
+    EXPECT_EQ(pow_fn.parents[0], t.get_impl());
+    backprop::Tensor<float> out;
+    pow_fn.set_output_tensor(out);
+    pow_fn.forward();
+    EXPECT_FLOAT_EQ(out.item(), 8.0);
+}
+
+TEST(FunctionTest, PowBackward){
+    backprop::Tensor<float> t(2.0);
+    backprop::PowFunction<float, float> pow_fn(t, 3.0);
+    backprop::Tensor<float> out;
+    pow_fn.set_output_tensor(out);
+    pow_fn.forward();
+    out.set_grad(1.0);
+    backward_function_test(pow_fn);
+    EXPECT_FLOAT_EQ(t.grad(), 12.0);
+}

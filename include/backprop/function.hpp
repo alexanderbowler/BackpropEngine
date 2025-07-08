@@ -250,4 +250,53 @@ class ExpFunction : public Function<T>{
     }
 };
 
+/**
+ * @brief Function representing expoentiation power x^c (where c is a constant)
+ * 
+ * The ExpFunction class implements the power function in the computation graph.
+ * Requiring that the exponent be a constant and not another tensor.
+ * It stores a pointer to the parent tensor. During backpropagation, the gradient from the output
+ * is propagated to the parent tensor using the derivative of x^c which is c*x^(c-1)
+ * 
+ * @tparam T The data type of the tensor elements (e.g., float, double).
+ */
+template <typename T, typename U>
+class PowFunction : public Function<T>{
+    public:
+    /**
+     * @brief Constructs a PowFunction with a parent tensor.
+     * 
+     * @param parent parent tensor.
+     */
+    PowFunction(Tensor<T> parent, U val){
+        this->parents = {parent.get_impl()};
+        this->exponent = val;
+    }
+
+    /**
+     * @brief Backward pass for the pow operation.
+     * 
+     * Propagates the output gradient to the parent tensor using the derivative of x^c.
+     * 
+     * @param output The output tensor from which the gradient is propagated.
+     */
+    void backward() override {
+        assert(this->output_ != nullptr);
+        this->parents[0]->grad_ += this->output_->grad_ * exponent * pow(this->parents[0]->item(), exponent-1);
+    }
+
+    /**
+     * @brief Forward pass of pow operation
+     * 
+     * Calculates the forward operation of x^c 
+     */
+    void forward() override{
+        assert(this->output_ != nullptr);
+        this->output_->set(pow(this->parents[0]->item(), exponent));
+    }
+    protected:
+    // constant which tensor was raised to
+    U exponent;
+};
+
 }
