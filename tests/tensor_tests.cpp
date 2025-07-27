@@ -261,3 +261,50 @@ TEST(TensorTest, ExpConstant){
   backprop::Tensor<float> t = exp(2.0);
   EXPECT_NEAR(t.item(), 7.389, 0.001);
 }
+
+TEST(TensorTest, PowTensorConstant) {
+  // Test pow(tensor, constant)
+  backprop::Tensor<float> t(3.0f);
+  float exponent = 2.0f;
+  backprop::Tensor<float> res = pow(t, exponent);
+  EXPECT_DOUBLE_EQ(res.item(), 9.0f);
+
+  // Set gradient and backward
+  res.set_grad(1.0f);
+  res.backward();
+  // d/dx x^n = n*x^(n-1) = 2*3^(2-1) = 2*3 = 6
+  EXPECT_DOUBLE_EQ(t.grad(), 6.0f);
+}
+
+TEST(TensorTest, PowConstantTensor) {
+  // Test pow(constant, tensor)
+  float base = 2.0f;
+  backprop::Tensor<float> res = pow(base, 3.0f);
+  EXPECT_NEAR(res.item(), 8.0f, 1e-5);
+}
+
+TEST(TensorTest, PowTensorConstant_NegativeExponent) {
+  // Test pow(tensor, negative constant)
+  backprop::Tensor<float> t(2.0f);
+  float exponent = -2.0f;
+  backprop::Tensor<float> res = pow(t, exponent);
+  EXPECT_NEAR(res.item(), 0.25f, 1e-5);
+
+  res.set_grad(1.0f);
+  res.backward();
+  // d/dx x^n = n*x^(n-1) = -2*2^(-3) = -2*0.125 = -0.25
+  EXPECT_NEAR(t.grad(), -0.25f, 1e-5);
+}
+
+TEST(TensorTest, PowTensor_NegativeBase) {
+  // Test pow(negative constant, tensor)
+  float exponent = 3.0f;
+  backprop::Tensor<float> t(-2.0f);
+  backprop::Tensor<float> res = pow(t, exponent);
+  EXPECT_NEAR(res.item(), -8.0f, 1e-5);
+
+  res.set_grad(1.0f);
+  res.backward();
+  // d/dx x^n = n*x^(n-1) = 3*(-2)^(3-1) = 3*(-2)^2 = 3*4 = 12
+  EXPECT_NEAR(t.grad(), 12.0f, 1e-5);
+}

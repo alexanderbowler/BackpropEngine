@@ -404,4 +404,24 @@ Tensor<T> exp(T val){
     return Tensor<T>(std::exp(t.item()), std::make_shared<ExpFunction<T>>(t));
 }
 
+/**
+ * @brief Power function for a tensor and a constant exponent (val^exponent)
+ */
+template <typename T, typename U>
+Tensor<T> pow(Tensor<T> val, U exponent) {
+    static_assert(std::is_arithmetic<U>::value, "Exponent must be a numeric type");
+    return Tensor<T>(std::pow(val.item(), exponent), std::make_shared<PowFunction<T, U>>(val, exponent));
+}
+
+/**
+ * @brief Power function for a constant base and a tensor exponent (base^tensor)
+ */
+template <typename T, typename U>
+Tensor<T> pow(T base, U exponent) {
+    static_assert(std::is_arithmetic<T>::value, "Base must be a numeric type");
+    Tensor<T> t(base);
+    return Tensor<U>(std::pow(base, exponent), std::make_shared<PowFunction<U, T>>(t, exponent));
+}
+
+
 }
