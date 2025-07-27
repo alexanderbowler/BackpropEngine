@@ -247,3 +247,17 @@ TEST(TensorTest, SubtractWithConstants){
   EXPECT_TRUE(res2.get_func_ptr()->parents[0]->get_data() == 3.0 || 
   res2.get_func_ptr()->parents[1]->get_data() == 3.0);
 }
+
+TEST(TensorTest, Exponential){
+  backprop::Tensor<float> t(2.0);
+  backprop::Tensor<float> res = exp(t);
+  EXPECT_NEAR(res.item(), 7.389, 0.001);
+  res.set_grad(1.0f);
+  res.backward();
+  EXPECT_NEAR(t.grad(), 7.389f, 0.001);
+}
+
+TEST(TensorTest, ExpConstant){
+  backprop::Tensor<float> t = exp(2.0);
+  EXPECT_NEAR(t.item(), 7.389, 0.001);
+}

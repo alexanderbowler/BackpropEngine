@@ -387,4 +387,21 @@ Tensor<T> operator-(T val, Tensor<U> rhs){
     return Tensor<T>(val) - rhs;
 }
 
+/**
+ * @brief Exponentiation function for a tensor (does e^x)
+ */
+template <typename T>
+Tensor<T> exp(Tensor<T> val){
+    return Tensor<T>(std::exp(val.item()), std::make_shared<ExpFunction<T>>(val));
+}
+
+/**
+ * @brief Exponentiation function for a constant (does e^x)
+ */
+template <typename T>
+Tensor<T> exp(T val){
+    Tensor<T> t(val);
+    return Tensor<T>(std::exp(t.item()), std::make_shared<ExpFunction<T>>(t));
+}
+
 }
