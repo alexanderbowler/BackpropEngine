@@ -308,3 +308,81 @@ TEST(TensorTest, PowTensor_NegativeBase) {
   // d/dx x^n = n*x^(n-1) = 3*(-2)^(3-1) = 3*(-2)^2 = 3*4 = 12
   EXPECT_NEAR(t.grad(), 12.0f, 1e-5);
 }
+
+TEST(TensorTest, Division){
+  backprop::Tensor<float> numerator(4.0);
+  backprop::Tensor<float> denominator(2.0);
+  backprop::Tensor<float> quotient = numerator/denominator;
+  EXPECT_EQ(quotient.item(), 2.0);
+
+  quotient.set_grad(1.0f);
+  quotient.backward();
+  // grad wrt numerator is 4.0 * 1/2 = 1/2
+  EXPECT_DOUBLE_EQ(numerator.grad(), 0.5f);
+  //grad wrt denominator is 4.0 * 2.0^-1 -> 4.0 * (-1*2.0^-2) = -1
+  EXPECT_DOUBLE_EQ(denominator.grad(), -1.0f);
+}
+
+TEST(TensorTest, DivisionConstant) {
+  // Test tensor / constant
+  backprop::Tensor<float> t(8.0f);
+  backprop::Tensor<float> result1 = t / 2.0f;
+  EXPECT_FLOAT_EQ(result1.item(), 4.0f);
+
+  // Test constant / tensor
+  backprop::Tensor<float> t2(4.0f);
+  backprop::Tensor<float> result2 = 12.0f / t2;
+  EXPECT_FLOAT_EQ(result2.item(), 3.0f);
+}
+
+TEST(TensorTest, ComplexExpression) {
+  // Test a complex expression: f(x,y,z) = tanh((x^2 + y) / z) + exp(x - y)
+  // This uses: pow, addition, subtraction, division, tanh, exp
+  
+  backprop::Tensor<float> x(2.0f);
+  backprop::Tensor<float> y(3.0f);
+  backprop::Tensor<float> z(2.0f);
+  
+  // Build the expression step by step
+  backprop::Tensor<float> x_squared = pow(x, 2.0f);  // x^2 = 4.0
+  backprop::Tensor<float> numerator = x_squared + y;  // x^2 + y = 4.0 + 3.0 = 7.0
+  backprop::Tensor<float> division_result = numerator / z;  // (x^2 + y) / z = 7.0 / 2.0 = 3.5
+  backprop::Tensor<float> tanh_result = tanh(division_result);  // tanh(3.5) ≈ 0.9982
+  
+  backprop::Tensor<float> diff = x - y;  // x - y = 2.0 - 3.0 = -1.0
+  backprop::Tensor<float> exp_result = exp(diff);  // exp(-1.0) ≈ 0.3679
+  
+  backprop::Tensor<float> final_result = tanh_result + exp_result;  // ≈ 0.9982 + 0.3679 = 1.3661
+  
+  // Check forward pass result
+  EXPECT_NEAR(final_result.item(), 1.3661f, 1e-3);
+  
+  // Backward pass
+  final_result.set_grad(1.0f);
+  final_result.backward();
+  
+  // Manual gradient calculations:
+  // Let f = tanh((x^2 + y) / z) + exp(x - y)
+  // Let u = (x^2 + y) / z = 3.5, v = x - y = -1.0
+  // f = tanh(u) + exp(v)
+  
+  // ∂f/∂x = ∂f/∂u * ∂u/∂x + ∂f/∂v * ∂v/∂x
+  // ∂f/∂u = 1 - tanh^2(u) = 1 - (0.9982)^2 ≈ 0.0036
+  // ∂u/∂x = 2x / z = 2 * 2.0 / 2.0 = 2.0
+  // ∂f/∂v = exp(v) = exp(-1.0) ≈ 0.3679
+  // ∂v/∂x = 1
+  // ∂f/∂x = 0.0036 * 2.0 + 0.3679 * 1 ≈ 0.3751
+  EXPECT_NEAR(x.grad(), 0.3751f, 1e-3);
+  
+  // ∂f/∂y = ∂f/∂u * ∂u/∂y + ∂f/∂v * ∂v/∂y
+  // ∂u/∂y = 1 / z = 1 / 2.0 = 0.5
+  // ∂v/∂y = -1
+  // ∂f/∂y = 0.0036 * 0.5 + 0.3679 * (-1) ≈ -0.3661
+  EXPECT_NEAR(y.grad(), -0.3661f, 1e-3);
+  
+  // ∂f/∂z = ∂f/∂u * ∂u/∂z
+  // ∂u/∂z = -(x^2 + y) / z^2 = -7.0 / 4.0 = -1.75
+  // ∂f/∂z = 0.0036 * (-1.75) ≈ -0.0063
+  EXPECT_NEAR(z.grad(), -0.0063f, 1e-3);
+}
+

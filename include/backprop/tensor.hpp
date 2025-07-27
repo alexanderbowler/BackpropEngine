@@ -423,5 +423,37 @@ Tensor<T> pow(T base, U exponent) {
     return Tensor<U>(std::pow(base, exponent), std::make_shared<PowFunction<U, T>>(t, exponent));
 }
 
+/**
+ * @brief Division function between two tensors
+ */
+template <typename T, typename U>
+Tensor<T> operator/(Tensor<T> lhs, Tensor<U> rhs){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot divide tensors of two different data types");
+    return lhs * (pow(rhs, -1));
+}
+
+/**
+ * @brief Division function between a tensor and a constant (tensor / constant)
+ */
+template <typename T, typename U>
+Tensor<T> operator/(Tensor<T> lhs, U rhs){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot divide tensor and constant of different data types");
+    Tensor<T> rhs_tensor(rhs);
+    return lhs / rhs_tensor;
+}
+
+/**
+ * @brief Division function between a constant and a tensor (constant / tensor)
+ */
+template <typename T, typename U>
+Tensor<U> operator/(T lhs, Tensor<U> rhs){
+    static_assert(std::is_same<T, U>::value, 
+                    "Cannot divide constant and tensor of different data types");
+    Tensor<U> lhs_tensor(lhs);
+    return lhs_tensor / rhs;
+}
+
 
 }
