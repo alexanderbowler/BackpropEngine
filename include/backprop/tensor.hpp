@@ -38,6 +38,10 @@ class Tensor{
        }
 
        // TODO: Create assignment operators and overload with assignment of just values as well
+       Tensor<T>& operator=(const Tensor<T>& other){
+            m_pTensor = other.m_pTensor;
+            return *this;
+       }
 
         /*
         @brief Constructor of a tensor with the corresponding function that created it
@@ -318,7 +322,7 @@ Tensor<T> operator+(U val, Tensor<T>& rhs){
  * @brief Multiply function for two tensors, creates and uses MultiplyFunction
  */
 template<typename T, typename U>
-Tensor<T> operator*(Tensor<T> lhs, Tensor<U> rhs){
+Tensor<T> operator*(const Tensor<T> lhs, const Tensor<U> rhs){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot multiply tensors of two different data types");
     
@@ -329,7 +333,7 @@ Tensor<T> operator*(Tensor<T> lhs, Tensor<U> rhs){
  * @brief Multiplication function for tensors with constants
  */
 template<typename T, typename U>
-Tensor<T> operator*(Tensor<T>& lhs, U val){
+Tensor<T> operator*(const Tensor<T>& lhs, const U val){
     static_assert(std::is_same<T, U>::value, 
                     "Cannot multiply tensors of two different data types");
     // the temp tensor here creates a shared_ptr that is then used within the func later
@@ -340,7 +344,7 @@ Tensor<T> operator*(Tensor<T>& lhs, U val){
  * @brief Multiplication function for tensors with constants
  */
 template<typename T, typename U>
-Tensor<T> operator*(U val, Tensor<T>& rhs){
+Tensor<T> operator*(const U val, const Tensor<T>& rhs){
     return rhs*val;
 }
 

@@ -1,6 +1,7 @@
 add_executable(all_tests.exe
     tensor_tests.cpp
     function_tests.cpp
+    neural_tests.cpp
     test_helpers.hpp
 )
 
